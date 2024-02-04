@@ -18,10 +18,15 @@ custom_long custom_long::operator+(const custom_long& other)
 
 custom_long custom_long::operator-(const custom_long& other)
 {
-    return;
+    return custom_long("0", "0");
+}
+
+custom_long custom_long::operator*(const custom_long& other)
+{
+    return custom_long("0", "0");
 }
 
 custom_long custom_long::operator/(const custom_long& other)
 {
-    return;
+    return custom_long("0", "0");
 }
