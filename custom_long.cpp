@@ -4,17 +4,39 @@
 #include <cmath>
 #include <algorithm>
 
-//Добавить проверку на то является ли число отрицательным
-bool int_compare(std::string num1, std::string num2)
+custom_long::custom_long(std::string integer, std::string fraction)
 {
-    int size1_int = num1.size();
-    int size2_int = num2.size();
-    if (size1_int < size2_int) {
+    this->integer = integer;
+    this->fraction = cut(fraction);
+}
+
+std::string custom_long::cut(std::string& num1)
+{
+    int size1 = num1.size();
+    int i = size1 - 1;
+    while(num1[i] == '0' && i > 0) {
+        num1.pop_back();
+        i--;
+    }
+    return num1;
+}
+
+std::tuple<int, int> custom_long::get_sizes(const std::string& num1, const std::string& num2)
+{
+    return std::make_tuple(num1.size(), num2.size());
+}
+
+//Добавить проверку на то является ли число отрицательным
+bool custom_long::int_compare(std::string num1, std::string num2)
+{
+    auto [size1, size2] = get_sizes(num1, num2);
+
+    if (size1 < size2) {
         return true;
-    } else if (size1_int > size2_int) {
+    } else if (size1 > size2) {
         return false;
     } else {
-        for (int i = 0; i < size1_int; i++) {
+        for (int i = 0; i < size1; i++) {
             if (num1[i] - '0' < num2[i] - '0') {
                 return true;
             } else if (num1[i] - '0' > num2[i] - '0') {
@@ -25,10 +47,9 @@ bool int_compare(std::string num1, std::string num2)
     }
 }
 
-bool frac_compare(std::string num1, std::string num2)
+bool custom_long::frac_compare(std::string num1, std::string num2)
 {
-    int size1 = num1.size();
-    int size2 = num2.size();
+    auto [size1, size2] = get_sizes(num1, num2);
     int max_size = std::max(size1, size2);
 
     //Сделать округления до ближайщего числа != 0
@@ -47,43 +68,46 @@ bool frac_compare(std::string num1, std::string num2)
     return false;
 }
 
-bool operator==(const custom_long &num1, const custom_long &num2)
+bool custom_long::operator==(const custom_long& other)
 {
-    int size_int1 = num1.integer.size();
-    int size_int2 = num2.integer.size();
-    int size_frac1 = num1.fraction.size();
-    int size_frac2 = num2.fraction.size();
+    auto [size_int1, size_int2] = get_sizes(integer, other.integer);
+    auto [size_frac1, size_frac2] = get_sizes(fraction, other.fraction);
 
     if (size_int1 != size_int2 || size_frac1 != size_frac2) {
         return false;
     }
     for (int i = 0; i < size_int1; i++) {
-        if (num1.integer[i] != num2.integer[i]) {
+        if (integer[i] != other.integer[i]) {
             return false;
         }
     }
     for (int i = 0; i < size_frac1; i++) {
-        if (num1.fraction[i] != num2.fraction[i]) {
+        if (fraction[i] != other.fraction[i]) {
             return false;
         }
     }
     return true;
 }
 
-bool operator<(const custom_long &num1, const custom_long &num2)
+bool custom_long::operator!=(const custom_long& other)
+{
+    return !(*this == other);
+}
+
+bool custom_long::operator<(const custom_long& other)
 {   
-    if (int_compare(num1.integer, num2.integer)) {
+    if (int_compare(integer, other.integer)) {
         return true;
-    } else if (int_compare(num2.integer, num1.integer)){
+    } else if (int_compare(other.integer, integer)){
         return false;
     } else {
-        return operator==(num1, num2) ? false : frac_compare(num1.fraction, num2.fraction);
+        return (*this == other) ? false : frac_compare(fraction, other.fraction);
     }
 }
 
-bool operator>(const custom_long &num1, const custom_long &num2)
+bool custom_long::operator>(const custom_long& other)
 {
-    return operator==(num1, num2) ? false : !operator<(num1, num2);;
+    return (*this == other) ? false : !(*this < other);
 }
 
 std::string custom_long::add(const std::string& num1, const std::string& num2, bool is_frac)
@@ -91,37 +115,36 @@ std::string custom_long::add(const std::string& num1, const std::string& num2, b
     std::string res;
     int carry = 0;
 
-    uint32_t len1 = num1.size();
-    uint32_t len2 = num2.size();
-    uint32_t max_len = std::max(len1, len2);
+    auto [size1, size2] = get_sizes(num1, num2);
+    int max_size = std::max(size1, size2);
 
     if (is_frac) {
-        uint32_t min_len = std::min(len1, len2);
+        uint32_t min_len = std::min(size1, size2);
         int j = 0;
         int i = 0;
         
         std::string new_num1 = num1;
         std::string new_num2 = num2;
 
-        if (len1 < len2) {
+        if (size1 < size2) {
             std::string temp = new_num1;
             new_num1 = new_num2;
             new_num2 = temp;
 
-            int temp_len = len1;
-            len1 = len2;
-            len2 = temp_len;
+            int temp_size = size1;
+            size1 = size2;
+            size2 = temp_size;
         }
 
-        while (i < max_len) {
+        while (i < max_size) {
             int digit1 = 0;
             int digit2 = 0;
 
-            if (max_len - 1 - i > min_len - 1) {
-                digit1 = new_num1[len1 - 1 - i] - '0';
+            if (max_size - 1 - i > min_len - 1) {
+                digit1 = new_num1[size1 - 1 - i] - '0';
             }else {
-                digit1 = new_num1[len1 - 1 - i] - '0';
-                digit2 = new_num2[len2 - 1 - j] - '0';
+                digit1 = new_num1[size1 - 1 - i] - '0';
+                digit2 = new_num2[size2 - 1 - j] - '0';
                 j++;
             }
             int sum = digit1 + digit2 + carry;
@@ -132,9 +155,9 @@ std::string custom_long::add(const std::string& num1, const std::string& num2, b
             i++;
         }
     } else {
-        for (int i = 0; i < max_len || carry; i++) {
-            int digit1 = i < len1 ? num1[len1 - 1 - i] - '0' : 0;
-            int digit2 = i < len2 ? num2[len2 - 1 - i] - '0' : 0;
+        for (int i = 0; i < max_size || carry; i++) {
+            int digit1 = i < size1 ? num1[size1 - 1 - i] - '0' : 0;
+            int digit2 = i < size2 ? num2[size2 - 1 - i] - '0' : 0;
 
             int sum = digit1 + digit2 + carry;
 
@@ -143,7 +166,6 @@ std::string custom_long::add(const std::string& num1, const std::string& num2, b
             res.push_back(sum + '0');
         }
     }
-
 
     if (carry) {
         res.push_back('0' + carry);
@@ -160,11 +182,10 @@ custom_long custom_long::operator+(const custom_long& other)
     res.fraction = add(fraction, other.fraction, true);
     res.integer = add(integer, other.integer, false);
 
-    uint32_t len1 = fraction.size();
-    uint32_t len2 = other.fraction.size();
-    uint32_t max_len = std::max(len1, len2);
+    auto [size1, size2] = get_sizes(fraction, other.fraction);
+    int max_size = std::max(size1, size2);
 
-    if (res.fraction.size() > max_len) {
+    if (res.fraction.size() > max_size) {
         res.integer = add(res.integer, "1", false);
     }
 
@@ -174,14 +195,13 @@ custom_long custom_long::operator+(const custom_long& other)
 std::string custom_long::subtract(const std::string& num1, const std::string& num2, bool is_frac)
 {
     std::string res;
-    uint32_t len1 = num1.size();
-    uint32_t len2 = num2.size();
-    uint32_t max_len = std::max(len1, len2);
+    auto [size1, size2] = get_sizes(num1, num2);
+    int max_size = std::max(size1, size2);
     int borrow = 0;
 
-    for (int i = 0; i < max_len; i++) {
-        int digit1 = i < len1 ? num1[len1 - 1 - i] - '0' : 0;
-        int digit2 = i < len2 ? num2[len2 - 1 - i] - '0' : 0;
+    for (int i = 0; i < max_size; i++) {
+        int digit1 = i < size1 ? num1[size1 - 1 - i] - '0' : 0;
+        int digit2 = i < size2 ? num2[size2 - 1 - i] - '0' : 0;
 
         int rest = digit1 - digit2 - borrow; 
 
