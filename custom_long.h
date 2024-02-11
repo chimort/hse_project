@@ -28,6 +28,6 @@ public:
     custom_long operator*(const custom_long& other);
     custom_long operator/(const custom_long& other);
 
-    std::string add(const std::string& num1, const std::string& num2, bool is_frac);
+    std::string add(const std::string& num1, const std::string& num2, bool is_frac, int& extra);
     std::string subtract(const std::string& num1, const std::string& num2, bool is_frac);
 };

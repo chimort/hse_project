@@ -52,7 +52,6 @@ bool custom_long::frac_compare(std::string num1, std::string num2)
     auto [size1, size2] = get_sizes(num1, num2);
     int max_size = std::max(size1, size2);
 
-    //Сделать округления до ближайщего числа != 0
     for (int i = 0; i < max_size; i++) {
         if (i > size1 - 1 && i < size2 - 1) {
             return false;
@@ -110,7 +109,7 @@ bool custom_long::operator>(const custom_long& other)
     return (*this == other) ? false : !(*this < other);
 }
 
-std::string custom_long::add(const std::string& num1, const std::string& num2, bool is_frac)
+std::string custom_long::add(const std::string& num1, const std::string& num2, bool is_frac, int& extra)
 {
     std::string res;
     int carry = 0;
@@ -119,7 +118,7 @@ std::string custom_long::add(const std::string& num1, const std::string& num2, b
     int max_size = std::max(size1, size2);
 
     if (is_frac) {
-        uint32_t min_len = std::min(size1, size2);
+        int min_len = std::min(size1, size2);
         int j = 0;
         int i = 0;
         
@@ -127,13 +126,9 @@ std::string custom_long::add(const std::string& num1, const std::string& num2, b
         std::string new_num2 = num2;
 
         if (size1 < size2) {
-            std::string temp = new_num1;
-            new_num1 = new_num2;
-            new_num2 = temp;
+            std::swap(new_num1, new_num2);
 
-            int temp_size = size1;
-            size1 = size2;
-            size2 = temp_size;
+            std::swap(size1, size2);
         }
 
         while (i < max_size) {
@@ -167,8 +162,10 @@ std::string custom_long::add(const std::string& num1, const std::string& num2, b
         }
     }
 
-    if (carry) {
+    if (carry && !is_frac) {
         res.push_back('0' + carry);
+    } else if (carry && is_frac) {
+        extra = 1;
     }
 
     std::reverse(res.begin(), res.end());
@@ -178,15 +175,17 @@ std::string custom_long::add(const std::string& num1, const std::string& num2, b
 custom_long custom_long::operator+(const custom_long& other)
 {
     custom_long res("0", "0");
-    
-    res.fraction = add(fraction, other.fraction, true);
-    res.integer = add(integer, other.integer, false);
+    int carry = 0;
+
+    res.fraction = add(fraction, other.fraction, true, carry);
+    res.integer = add(integer, other.integer, false, carry);
 
     auto [size1, size2] = get_sizes(fraction, other.fraction);
     int max_size = std::max(size1, size2);
 
-    if (res.fraction.size() > max_size) {
-        res.integer = add(res.integer, "1", false);
+
+    if (carry) {
+        res.integer = add(res.integer, "1", false, carry);
     }
 
     return res;
@@ -199,11 +198,32 @@ std::string custom_long::subtract(const std::string& num1, const std::string& nu
     int max_size = std::max(size1, size2);
     int borrow = 0;
 
-    for (int i = 0; i < max_size; i++) {
-        int digit1 = i < size1 ? num1[size1 - 1 - i] - '0' : 0;
-        int digit2 = i < size2 ? num2[size2 - 1 - i] - '0' : 0;
+    std::string new_num1 = num1;
+    std::string new_num2 = num2;
 
-        int rest = digit1 - digit2 - borrow; 
+    // std::cout << "-------before-------" << std::endl;
+    // std::cout << new_num1 << std::endl;
+    // std::cout << new_num2 << std::endl;
+    if (is_frac) {
+        if (size1 < max_size) {
+            new_num1.append(max_size - size1, '0');
+        }
+
+        if (size2 < max_size) {
+            new_num2.append(max_size - size2, '0');
+        }
+    }
+
+
+    // std::cout << new_num1 << std::endl;
+    // std::cout << new_num2 << std::endl;
+    // std::cout << "-------after-------" << std::endl;
+
+    for (int i = 0; i < max_size; i++) {
+        int digit1 = i < size1 ? new_num1[size1 - 1 - i] - '0' : 0;
+        int digit2 = i < size2 ? new_num2[size2 - 1 - i] - '0' : 0;
+
+        int rest = digit1 - digit2 - borrow;
 
         if (rest < 0) {
             rest += 10;
@@ -211,14 +231,13 @@ std::string custom_long::subtract(const std::string& num1, const std::string& nu
         } else {
             borrow = 0;
         }
-        std::cout << digit1 << " " << digit2 << std::endl;
-        std::cout << rest << std::endl;
         res.push_back(rest + '0');
     }
 
-    while (res.size() > 1 && res.back() == '0') {
-        res.pop_back();
+    if (!is_frac) {
+        cut(res);
     }
+    
 
     std::reverse(res.begin(), res.end());
     return res;
@@ -228,14 +247,51 @@ custom_long custom_long::operator-(const custom_long& other)
 {
     custom_long res("0", "0");
     
-    //res.fraction = subtract(fraction, other.fraction, true);
-    res.fraction = fraction;
-    res.integer = subtract(integer, other.integer, false);
+    std::string num_int1 = integer;
+    std::string num_int2 = other.integer;
+    std::string num_frac1 = fraction;
+    std::string num_frac2 = other.fraction;
+    bool sign = false;
+    bool flag = false;
 
-    // if (res.fraction.size() > max_len) {
-    //     res.integer = subtract(res.integer, "1", false);
-    // }
+    bool compare_of_ints = int_compare(integer, other.integer);
+    bool compare_of_fracs = frac_compare(fraction, other.fraction);
 
+    if (!(*this == other)) {
+        if (compare_of_ints) { // int1 < int2
+            std::swap(num_int1, num_int2);
+            sign = true;
+
+            if (compare_of_fracs) { // frac1 < frac2
+                std::swap(num_frac1, num_frac2);
+                flag = true;
+            }
+        } else {
+            if (compare_of_fracs) { // frac1 < frac2
+                std::swap(num_frac1, num_frac2);
+                flag = true;
+                sign = true;
+            }
+        }
+    } else {
+        return res;
+    }
+
+    auto [size1, size2] = get_sizes(fraction, other.fraction);
+    int max_size = std::max(size1, size2);
+
+    res.fraction = subtract(num_frac1, num_frac2, true);
+    res.integer = subtract(num_int1, num_int2, false);
+
+    if (flag) {
+        res.integer = subtract(res.integer, "1", false);
+    }
+
+    if (sign) {
+        res.integer.insert(0, 1, '-');
+    }
+
+    cut(res.fraction);
     return res;
 }
 
