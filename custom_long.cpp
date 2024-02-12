@@ -8,6 +8,8 @@ custom_long::custom_long(std::string integer, std::string fraction)
 {
     this->integer = integer;
     this->fraction = cut(fraction);
+    integer[0] == '-' ? this->sign = true : this->sign = false;
+    this->precision = 0;
 }
 
 std::string custom_long::cut(std::string& num1)
@@ -24,6 +26,14 @@ std::string custom_long::cut(std::string& num1)
 std::tuple<int, int> custom_long::get_sizes(const std::string& num1, const std::string& num2)
 {
     return std::make_tuple(num1.size(), num2.size());
+}
+
+void custom_long::check_sign(custom_long& number)
+{
+    if (number.integer[0] == '-') {
+        this->sign = true;
+        number.integer.erase(number.integer.begin());
+    }
 }
 
 //Добавить проверку на то является ли число отрицательным
@@ -96,11 +106,11 @@ bool custom_long::operator!=(const custom_long& other)
 bool custom_long::operator<(const custom_long& other)
 {   
     if (int_compare(integer, other.integer)) {
-        return true;
-    } else if (int_compare(other.integer, integer)){
-        return false;
+        return (this->sign == other.sign) || (this->sign && !other.sign);
+    } else if (int_compare(other.integer, integer)) {
+        return !(this->sign == other.sign) || (this->sign && !other.sign);
     } else {
-        return (*this == other) ? false : frac_compare(fraction, other.fraction);
+        return (*this != other) && ((this->sign == other.sign) ? frac_compare(fraction, other.fraction) : !frac_compare(fraction, other.fraction));
     }
 }
 
@@ -191,7 +201,7 @@ custom_long custom_long::operator+(const custom_long& other)
     return res;
 }
 
-std::string custom_long::subtract(const std::string& num1, const std::string& num2, bool is_frac)
+std::string custom_long::subtract(const std::string& num1, const std::string& num2, bool is_frac, int& extra)
 {
     std::string res;
     auto [size1, size2] = get_sizes(num1, num2);
@@ -228,17 +238,20 @@ std::string custom_long::subtract(const std::string& num1, const std::string& nu
         if (rest < 0) {
             rest += 10;
             borrow = 1;
-        } else {
-            borrow = 0;
-        }
+        } //else {
+        //     borrow = 0;
+        // }
         res.push_back(rest + '0');
+    }
+
+    if (borrow > 0 && is_frac) {
+        extra = 1;
     }
 
     if (!is_frac) {
         cut(res);
     }
     
-
     std::reverse(res.begin(), res.end());
     return res;
 }
@@ -253,6 +266,7 @@ custom_long custom_long::operator-(const custom_long& other)
     std::string num_frac2 = other.fraction;
     bool sign = false;
     bool flag = false;
+    int extra = 0;
 
     bool compare_of_ints = int_compare(integer, other.integer);
     bool compare_of_fracs = frac_compare(fraction, other.fraction);
@@ -269,7 +283,7 @@ custom_long custom_long::operator-(const custom_long& other)
         } else {
             if (compare_of_fracs) { // frac1 < frac2
                 std::swap(num_frac1, num_frac2);
-                flag = true;
+                //flag = true; вот эту штуку нужно как-то обработаь по умному
                 sign = true;
             }
         }
@@ -280,11 +294,11 @@ custom_long custom_long::operator-(const custom_long& other)
     auto [size1, size2] = get_sizes(fraction, other.fraction);
     int max_size = std::max(size1, size2);
 
-    res.fraction = subtract(num_frac1, num_frac2, true);
-    res.integer = subtract(num_int1, num_int2, false);
+    res.fraction = subtract(num_frac1, num_frac2, true, extra);
+    res.integer = subtract(num_int1, num_int2, false, extra);
 
-    if (flag) {
-        res.integer = subtract(res.integer, "1", false);
+    if (extra) {
+        res.integer = subtract(res.integer, "1", false, extra);
     }
 
     if (sign) {
@@ -303,4 +317,13 @@ custom_long custom_long::operator*(const custom_long& other)
 custom_long custom_long::operator/(const custom_long& other)
 {
     return custom_long("0", "0");
+}
+
+std::ostream &operator<<(std::ostream &os, const custom_long &cl)
+{
+    if (cl.precision > 0) {
+        return os << cl.integer + "." + cl.fraction.substr(0, cl.precision);
+    } else {
+        return os << cl.integer;
+    }
 }
