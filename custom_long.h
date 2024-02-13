@@ -20,6 +20,9 @@ private:
 
 public:
     custom_long(std::string integer, std::string fraction);
+    custom_long(int number);
+    custom_long(double number);
+    custom_long(std::string number);
     
     friend std::ostream& operator<<(std::ostream& os, const custom_long& cl);
     bool operator==(const custom_long& other);

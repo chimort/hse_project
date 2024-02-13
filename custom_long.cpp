@@ -15,6 +15,54 @@ custom_long::custom_long(std::string integer, std::string fraction)
     this->precision = fraction.size();
 }
 
+custom_long::custom_long(int number)
+{
+    if (number < 0) {
+        this->sign = true;
+        number = -number;
+    } else {
+        this->sign = false;
+    }
+    this->integer = std::to_string(number);
+    this->fraction = "0";
+    this->precision = 0;
+}
+
+custom_long::custom_long(double number) {
+    if (number < 0) {
+        this->sign = true;
+        number = -number;
+    } else {
+        this->sign = false;
+    }
+    int int_part = static_cast<int>(number);
+    this->integer = std::to_string(int_part);
+
+    double frac_part = std::abs(number - int_part);
+    this->fraction = std::to_string(frac_part).substr(2);
+    this->precision = this->fraction.size();
+}
+
+custom_long::custom_long(std::string number) {
+    size_t dot_pos = number.find('.');
+
+    if (number[0] == '-') {
+        this->sign = true;
+        number.erase(number.begin());
+    } else {
+        this->sign = false;
+    }
+    if (dot_pos != std::string::npos) {
+        this->integer = number.substr(0, dot_pos);
+        this->fraction = number.substr(dot_pos + 1);
+        this->precision = this->fraction.size();
+    } else {
+        this->integer = number;
+        this->fraction = "0";
+        this->precision = 0;
+    }
+}
+
 std::string custom_long::cut(std::string& num1)
 {
     int size1 = num1.size();
