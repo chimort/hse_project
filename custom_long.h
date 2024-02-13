@@ -11,7 +11,7 @@ private:
     int precision;
 
     std::string cut(std::string& num1);
-    std::string add(const std::string& num1, const std::string& num2, bool is_frac, int& extra);
+    custom_long add(custom_long& num1, custom_long& num2);
     custom_long subtract(custom_long& num1, custom_long& num2);
 
     bool frac_compare(std::string num1, std::string num2);
@@ -27,7 +27,7 @@ public:
     bool operator!=(const custom_long& other);
     bool operator<(const custom_long& other);
     bool operator>(const custom_long& other);
-    custom_long operator+(const custom_long& other);
+    custom_long operator+(custom_long& other);
     custom_long operator-(custom_long& other);
     custom_long operator*(const custom_long& other);
     custom_long operator/(const custom_long& other);

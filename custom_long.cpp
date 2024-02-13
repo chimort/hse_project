@@ -119,86 +119,76 @@ bool custom_long::operator>(const custom_long& other)
     return (*this == other) ? false : !(*this < other);
 }
 
-std::string custom_long::add(const std::string& num1, const std::string& num2, bool is_frac, int& extra)
+custom_long custom_long::add(custom_long& num1, custom_long& num2)
 {
-    std::string res;
-    int carry = 0;
+    if (num1.sign && !num2.sign) {
+        return subtract(num2, num1);
+    }
 
-    auto [size1, size2] = get_sizes(num1, num2);
+    if (!num1.sign && num2.sign) {
+        return subtract(num1, num2);
+    }
+
+    custom_long res = {"0", "0"};
+    int carry = 0;
+    auto [size1, size2] = get_sizes(num1.fraction, num2.fraction);
     int max_size = std::max(size1, size2);
 
-    if (is_frac) {
-        int min_len = std::min(size1, size2);
-        int j = 0;
-        int i = 0;
-        
-        std::string new_num1 = num1;
-        std::string new_num2 = num2;
+    auto [int_size1, int_size2] = get_sizes(num1.integer, num2.integer);
+    int max_int_size = std::max(int_size1, int_size2);
 
-        if (size1 < size2) {
-            std::swap(new_num1, new_num2);
 
-            std::swap(size1, size2);
-        }
+    int min_len = std::min(size1, size2);
+    int j = 0;
+    int i = 0;
 
-        while (i < max_size) {
-            int digit1 = 0;
-            int digit2 = 0;
+    if (size1 < size2) {
+        std::swap(num1.fraction, num2.fraction);
 
-            if (max_size - 1 - i > min_len - 1) {
-                digit1 = new_num1[size1 - 1 - i] - '0';
-            }else {
-                digit1 = new_num1[size1 - 1 - i] - '0';
-                digit2 = new_num2[size2 - 1 - j] - '0';
-                j++;
-            }
-            int sum = digit1 + digit2 + carry;
-
-            carry = sum / 10;
-            sum %= 10;
-            res.push_back(sum + '0');
-            i++;
-        }
-    } else {
-        for (int i = 0; i < max_size || carry; i++) {
-            int digit1 = i < size1 ? num1[size1 - 1 - i] - '0' : 0;
-            int digit2 = i < size2 ? num2[size2 - 1 - i] - '0' : 0;
-
-            int sum = digit1 + digit2 + carry;
-
-            carry = sum / 10;
-            sum %= 10;
-            res.push_back(sum + '0');
-        }
+        std::swap(size1, size2);
     }
 
-    if (carry && !is_frac) {
-        res.push_back('0' + carry);
-    } else if (carry && is_frac) {
-        extra = 1;
+    while (i < max_size) {
+        int digit1 = 0;
+        int digit2 = 0;
+
+        if (max_size - 1 - i > min_len - 1) {
+            digit1 = num1.fraction[size1 - 1 - i] - '0';
+        }else {
+            digit1 = num1.fraction[size1 - 1 - i] - '0';
+            digit2 = num2.fraction[size2 - 1 - j] - '0';
+            j++;
+        }
+        int sum = digit1 + digit2 + carry;
+
+        carry = sum / 10;
+        sum %= 10;
+        res.fraction.push_back(sum + '0');
+        i++;
     }
 
-    std::reverse(res.begin(), res.end());
+    std::reverse(res.fraction.begin(), res.fraction.end());
+    cut(res.fraction);
+
+    for (int i = 0; i < max_int_size || carry; i++) {
+        int digit1 = i < int_size1 ? num1.integer[int_size1 - 1 - i] - '0' : 0;
+        int digit2 = i < int_size2 ? num2.integer[int_size2 - 1 - i] - '0' : 0;
+
+        int sum = digit1 + digit2 + carry;
+
+        carry = sum / 10;
+        sum %= 10;
+        res.integer.push_back(sum + '0');
+    }
+
+    std::reverse(res.integer.begin(), res.integer.end());
+    res.integer.pop_back();
     return res;
 }
 
-custom_long custom_long::operator+(const custom_long& other)
+custom_long custom_long::operator+(custom_long& other)
 {
-    custom_long res("0", "0");
-    int carry = 0;
-
-    res.fraction = add(fraction, other.fraction, true, carry);
-    res.integer = add(integer, other.integer, false, carry);
-
-    auto [size1, size2] = get_sizes(fraction, other.fraction);
-    int max_size = std::max(size1, size2);
-
-
-    if (carry) {
-        res.integer = add(res.integer, "1", false, carry);
-    }
-
-    return res;
+    return add(*this, other);
 }
 
 custom_long custom_long::subtract(custom_long& num1, custom_long& num2)
