@@ -9,7 +9,7 @@ custom_long::custom_long(std::string integer, std::string fraction)
     this->integer = integer;
     this->fraction = cut(fraction);
     integer[0] == '-' ? this->sign = true : this->sign = false;
-    this->precision = 0;
+    this->precision = 10;
 }
 
 std::string custom_long::cut(std::string& num1)
@@ -36,7 +36,7 @@ void custom_long::check_sign(custom_long& number)
     }
 }
 
-//Добавить проверку на то является ли число отрицательным
+
 bool custom_long::int_compare(std::string num1, std::string num2)
 {
     auto [size1, size2] = get_sizes(num1, num2);
@@ -201,117 +201,92 @@ custom_long custom_long::operator+(const custom_long& other)
     return res;
 }
 
-std::string custom_long::subtract(const std::string& num1, const std::string& num2, bool is_frac, int& extra)
+custom_long custom_long::subtract(custom_long& num1, custom_long& num2)
 {
-    std::string res;
-    auto [size1, size2] = get_sizes(num1, num2);
+    int carry = 0;
+    bool extra = false;
+    custom_long res = {"0", "0"};
+
+    auto [size1, size2] = get_sizes(num1.fraction, num2.fraction);
     int max_size = std::max(size1, size2);
-    int borrow = 0;
 
-    std::string new_num1 = num1;
-    std::string new_num2 = num2;
-
-    // std::cout << "-------before-------" << std::endl;
-    // std::cout << new_num1 << std::endl;
-    // std::cout << new_num2 << std::endl;
-    if (is_frac) {
-        if (size1 < max_size) {
-            new_num1.append(max_size - size1, '0');
-        }
-
-        if (size2 < max_size) {
-            new_num2.append(max_size - size2, '0');
-        }
-    }
-
-
-    // std::cout << new_num1 << std::endl;
-    // std::cout << new_num2 << std::endl;
-    // std::cout << "-------after-------" << std::endl;
-
-    for (int i = 0; i < max_size; i++) {
-        int digit1 = i < size1 ? new_num1[size1 - 1 - i] - '0' : 0;
-        int digit2 = i < size2 ? new_num2[size2 - 1 - i] - '0' : 0;
-
-        int rest = digit1 - digit2 - borrow;
-
-        if (rest < 0) {
-            rest += 10;
-            borrow = 1;
-        } //else {
-        //     borrow = 0;
-        // }
-        res.push_back(rest + '0');
-    }
-
-    if (borrow > 0 && is_frac) {
-        extra = 1;
-    }
-
-    if (!is_frac) {
-        cut(res);
-    }
-    
-    std::reverse(res.begin(), res.end());
-    return res;
-}
-
-custom_long custom_long::operator-(const custom_long& other)
-{
-    custom_long res("0", "0");
-    
-    std::string num_int1 = integer;
-    std::string num_int2 = other.integer;
-    std::string num_frac1 = fraction;
-    std::string num_frac2 = other.fraction;
-    bool sign = false;
-    bool flag = false;
-    int extra = 0;
-
-    bool compare_of_ints = int_compare(integer, other.integer);
-    bool compare_of_fracs = frac_compare(fraction, other.fraction);
-
-    if (!(*this == other)) {
-        if (compare_of_ints) { // int1 < int2
-            std::swap(num_int1, num_int2);
-            sign = true;
-
-            if (compare_of_fracs) { // frac1 < frac2
-                std::swap(num_frac1, num_frac2);
-                flag = true;
-            }
-        } else {
-            if (compare_of_fracs) { // frac1 < frac2
-                std::swap(num_frac1, num_frac2);
-                //flag = true; вот эту штуку нужно как-то обработаь по умному
-                sign = true;
-            }
-        }
+    if (num1 > num2) {
+        res.sign = false;
+    } else if (num1 < num2){
+        std::swap(num1, num2);
+        res.sign = true;
     } else {
+        res.sign = false;
         return res;
     }
 
-    auto [size1, size2] = get_sizes(fraction, other.fraction);
-    int max_size = std::max(size1, size2);
-
-    res.fraction = subtract(num_frac1, num_frac2, true, extra);
-    res.integer = subtract(num_int1, num_int2, false, extra);
-
-    if (extra) {
-        res.integer = subtract(res.integer, "1", false, extra);
+    if (size1 < max_size) {
+        num1.fraction.append(max_size - size1, '0');
     }
 
-    if (sign) {
-        res.integer.insert(0, 1, '-');
+    if (size2 < max_size) {
+        num2.fraction.append(max_size - size2, '0');
     }
 
+    for (int i = max_size - 1; i >= 0; i--) {
+        int digit1 = (i < size1) ? num1.fraction[i] - '0' : 0;
+        int digit2 = (i < size2) ? num2.fraction[i] - '0' : 0;
+
+        int diff = digit1 - digit2 - carry;
+        carry = 0;
+
+        if (diff < 0) {
+            diff += 10;
+            carry = 1;
+        }
+        res.fraction.push_back(diff + '0');
+    }
+
+    std::reverse(res.fraction.begin(), res.fraction.end());
     cut(res.fraction);
+
+    auto [int_size1, int_size2] = get_sizes(num1.integer, num2.integer);
+    int max_int_size = std::max(int_size1, int_size2);
+
+    if (int_size1 < max_int_size) {
+        num1.integer.insert(0, max_int_size - int_size1, '0');
+    }
+
+    if (int_size2 < max_int_size) {
+        num2.integer.insert(0, max_int_size - int_size2, '0');
+    }
+
+    for (int i = int_size1 - 1; i >= 0; i--) {
+        int diff = num1.integer[i] - num2.integer[i] - carry;
+        carry = 0;
+        if (diff < 0) {
+            diff += 10;
+            carry = 1;
+            extra = true;
+        }else {
+            extra = false;
+        }
+        res.integer.push_back(diff + '0');
+    }
+
+    cut(res.integer);
+    std::reverse(res.integer.begin(), res.integer.end());
+    cut(res.integer);
+
     return res;
 }
 
-custom_long custom_long::operator*(const custom_long& other)
+custom_long custom_long::operator-(custom_long& other)
 {
-    return custom_long("0", "0");
+    return subtract(*this, other);
+}
+
+custom_long custom_long::operator*(const custom_long& other)
+{   
+    custom_long res("0", "0");
+    
+
+    return res;
 }
 
 custom_long custom_long::operator/(const custom_long& other)
@@ -322,8 +297,16 @@ custom_long custom_long::operator/(const custom_long& other)
 std::ostream &operator<<(std::ostream &os, const custom_long &cl)
 {
     if (cl.precision > 0) {
-        return os << cl.integer + "." + cl.fraction.substr(0, cl.precision);
+        if (!cl.sign) {
+            return os << cl.integer + "." + cl.fraction.substr(0, cl.precision);
+        } else {
+            return os << "-" << cl.integer + "." + cl.fraction.substr(0, cl.precision);
+        }
     } else {
-        return os << cl.integer;
+        if (!cl.sign) {
+            return os << cl.integer; 
+        } else {
+            return os << "-" << cl.integer;
+        }
     }
 }
