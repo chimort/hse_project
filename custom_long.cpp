@@ -8,8 +8,11 @@ custom_long::custom_long(std::string integer, std::string fraction)
 {
     this->integer = integer;
     this->fraction = cut(fraction);
-    integer[0] == '-' ? this->sign = true : this->sign = false;
-    this->precision = 10;
+    if (integer[0] == '-') {
+        this->sign = true;
+        this->integer.erase(this->integer.begin());
+    }
+    this->precision = fraction.size();
 }
 
 std::string custom_long::cut(std::string& num1)
@@ -27,15 +30,6 @@ std::tuple<int, int> custom_long::get_sizes(const std::string& num1, const std::
 {
     return std::make_tuple(num1.size(), num2.size());
 }
-
-void custom_long::check_sign(custom_long& number)
-{
-    if (number.integer[0] == '-') {
-        this->sign = true;
-        number.integer.erase(number.integer.begin());
-    }
-}
-
 
 bool custom_long::int_compare(std::string num1, std::string num2)
 {
@@ -63,39 +57,27 @@ bool custom_long::frac_compare(std::string num1, std::string num2)
     int max_size = std::max(size1, size2);
 
     for (int i = 0; i < max_size; i++) {
-        if (i > size1 - 1 && i < size2 - 1) {
-            return false;
-        } else if (i < size1 - 1 && i > size2 - 1){
-            return true;
+        if (i >= size1 && i < size2) {
+            return true;  // num1 короче, считаем его меньшим
+        } else if (i < size1 && i >= size2) {
+            return false;  // num2 короче, считаем его меньшим
         }
+
         if (num1[i] - '0' < num2[i] - '0') {
             return true;
         } else if (num1[i] - '0' > num2[i] - '0') {
             return false;
         }
     }
-    return false;
+    return false; 
 }
 
 bool custom_long::operator==(const custom_long& other)
 {
-    auto [size_int1, size_int2] = get_sizes(integer, other.integer);
-    auto [size_frac1, size_frac2] = get_sizes(fraction, other.fraction);
-
-    if (size_int1 != size_int2 || size_frac1 != size_frac2) {
+    if (this->precision != other.precision) {
         return false;
     }
-    for (int i = 0; i < size_int1; i++) {
-        if (integer[i] != other.integer[i]) {
-            return false;
-        }
-    }
-    for (int i = 0; i < size_frac1; i++) {
-        if (fraction[i] != other.fraction[i]) {
-            return false;
-        }
-    }
-    return true;
+    return (this->integer == other.integer) && (this->fraction == other.fraction);
 }
 
 bool custom_long::operator!=(const custom_long& other)
@@ -105,12 +87,26 @@ bool custom_long::operator!=(const custom_long& other)
 
 bool custom_long::operator<(const custom_long& other)
 {   
-    if (int_compare(integer, other.integer)) {
-        return (this->sign == other.sign) || (this->sign && !other.sign);
-    } else if (int_compare(other.integer, integer)) {
-        return !(this->sign == other.sign) || (this->sign && !other.sign);
+    if (this->sign && !other.sign) {
+        return true;
+    } else if (!this->sign && other.sign) {
+        return false;
+    } else if (this->sign && other.sign) {
+        if (int_compare(other.integer, integer)) {
+            return true;
+        } else if (int_compare(integer, other.integer)) {
+            return false;
+        } else {
+            return frac_compare(other.fraction, fraction);
+        }
     } else {
-        return (*this != other) && ((this->sign == other.sign) ? frac_compare(fraction, other.fraction) : !frac_compare(fraction, other.fraction));
+        if (int_compare(integer, other.integer)) {
+            return true;
+        } else if (int_compare(other.integer, integer)) {
+            return false;
+        } else {
+            return frac_compare(fraction, other.fraction);
+        }
     }
 }
 
@@ -188,7 +184,7 @@ custom_long custom_long::add(custom_long& num1, custom_long& num2)
 
 custom_long custom_long::operator+(custom_long& other)
 {
-    return add(*this, other);
+    return add(*this, other).new_with_precision(this->fraction.size() + other.fraction.size());
 }
 
 custom_long custom_long::subtract(custom_long& num1, custom_long& num2)
