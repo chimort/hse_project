@@ -1,5 +1,5 @@
 #include "gtest/gtest.h"
-#include "../custom_long.h"
+#include "custom_long.h"
 #include <iostream>
 
 TEST(Compare1, SameIntegers){
@@ -123,6 +123,34 @@ TEST(CustomLongTest, test3) {
 
     EXPECT_TRUE(num1 + num2 == expected);
 }
+
+TEST(DifferentCreation, test1) {
+    custom_long num1 = custom_long(123);
+    custom_long expected = custom_long("123", "0");
+    EXPECT_TRUE(num1 == expected);
+}
+
+TEST(DifferentCreation, test2) {
+    custom_long num1 = custom_long(222.333);
+    custom_long expected = custom_long("222", "333");
+    std::cout << "num1: " << num1 << std::endl;
+    std::cout << "expected: " << expected << std::endl;
+    EXPECT_TRUE(num1 == expected);
+}
+
+TEST(DifferentCreation, test3) {
+    custom_long num1 = custom_long("2343535");
+    custom_long expected = custom_long(2343535);
+
+    EXPECT_TRUE(num1 == expected);
+}
+
+TEST(DifferentCreation, test4) {
+    custom_long num1 = custom_long("2343535.444444");
+    custom_long expected = custom_long("2343535", "444444");
+    EXPECT_TRUE(num1 == expected);
+}
+
 
 int main(int argc, char **argv)
 {
