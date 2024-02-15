@@ -25,7 +25,7 @@ custom_long::custom_long(int number)
     }
     this->integer = std::to_string(number);
     this->fraction = "0";
-    this->precision = 0;
+    this->precision = 1;
 }
 
 custom_long::custom_long(double number) {
@@ -62,7 +62,7 @@ custom_long::custom_long(std::string number) {
     } else {
         this->integer = number;
         this->fraction = "0";
-        this->precision = 0;
+        this->precision = 1;
     }
 }
 

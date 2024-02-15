@@ -133,8 +133,7 @@ TEST(DifferentCreation, test1) {
 TEST(DifferentCreation, test2) {
     custom_long num1 = custom_long(222.333);
     custom_long expected = custom_long("222", "333");
-    std::cout << "num1: " << num1 << std::endl;
-    std::cout << "expected: " << expected << std::endl;
+
     EXPECT_TRUE(num1 == expected);
 }
 
