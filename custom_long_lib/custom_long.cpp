@@ -68,7 +68,9 @@ custom_long::custom_long(std::string number) {
 
 custom_long custom_long::set_precision(int acc)
 {
-    return custom_long(this->integer, this->fraction.substr(0, acc));
+    custom_long res = {this->integer, this->fraction.substr(0, acc)};
+    res.sign = this->sign;
+    return res;
 }
 
 std::string custom_long::cut(std::string& num1)
