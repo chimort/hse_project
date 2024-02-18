@@ -11,8 +11,8 @@ private:
     int precision;
 
     std::string cut(std::string& num1);
-    custom_long add(custom_long& num1, custom_long& num2);
-    custom_long subtract(custom_long& num1, custom_long& num2);
+    custom_long add(const custom_long& num1, const custom_long& num2, bool side, bool unexpected);
+    custom_long subtract(const custom_long& num1, const custom_long& num2, bool side, bool unexpected);
 
     bool frac_compare(std::string num1, std::string num2);
     bool int_compare(std::string num1, std::string num2);
@@ -29,12 +29,12 @@ public:
     bool operator!=(const custom_long& other);
     bool operator<(const custom_long& other);
     bool operator>(const custom_long& other);
-    custom_long operator+(custom_long& other);
-    custom_long operator-(custom_long& other);
+    custom_long operator+(const custom_long& other);
+    custom_long operator-(const custom_long& other);
     custom_long operator*(const custom_long& other);
     custom_long operator/(const custom_long& other);
 
-    inline custom_long new_with_precision(int acc) { 
-        return custom_long(this->integer, this->fraction.substr(0, acc));
-    }
+    custom_long set_precision(int acc);
 };
+
+custom_long operator ""_cl(const char *str, size_t size);

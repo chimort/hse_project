@@ -16,11 +16,11 @@ int main()
 
 
     custom_long res = num1 + num2;
-    res.new_with_precision(1234);
+    res.set_precision(1234);
 
     std::cout << "----------addition block----------" << std::endl;
-    std::cout << res.new_with_precision(0) << std::endl;
-    std::cout << (num3+num4).new_with_precision(12) << std::endl;
+    std::cout << res.set_precision(0) << std::endl;
+    std::cout << num3+num4 << std::endl;
     std::cout << num5+num6 << std::endl;
     std::cout << num7+num8 << std::endl;
 
@@ -49,18 +49,9 @@ int main()
 
     //std::cout << custom_long("123", "0") * custom_long("123", "0") << std::endl;
 
-    custom_long n1("123", "456");
-    custom_long n2("789", "012");
 
-    bool tesst = n1 < n2;
-    std::cout << tesst << std::endl;
-    custom_long n3 = n1.new_with_precision(2);
-
-    std::cout << (n1 + n2) << std::endl;
-    std::cout << n1.new_with_precision(0) << std::endl;
-
-    std::cout << custom_long(1.12) << std::endl;
-    std::cout << custom_long("2343535.444444") << std::endl;
+    auto tessst = "1243825821852186578216578126785682176528.124215215215"_cl;
+    std::cout << tessst << std::endl;
 
     return 0;
 }

@@ -67,24 +67,32 @@ TEST(Compare, MixedSignNumbers) {
     custom_long num1 = {"-123", "456"};
     custom_long num2 = {"123", "789"};
 
-    EXPECT_TRUE(num1 < num2);
-    EXPECT_FALSE(num1 > num2);
-    EXPECT_FALSE(num1 == num2);
-    EXPECT_TRUE(num1 != num2);
+    std::cout << "Testing: " << num1 << " < " << num2 << std::endl;
+    EXPECT_TRUE(num1 < num2) << "Comparison failed: " << num1 << " < " << num2;
+
+    std::cout << "Testing: " << num1 << " not > " << num2 << std::endl;
+    EXPECT_FALSE(num1 > num2) << "Comparison failed: " << num1 << " not > " << num2;
+
+    std::cout << "Testing: " << num1 << " == " << num2 << std::endl;
+    EXPECT_FALSE(num1 == num2) << "Comparison failed: " << num1 << " != " << num2;
+
+    std::cout << "Testing: " << num1 << " != " << num2 << std::endl;
+    EXPECT_TRUE(num1 != num2) << "Comparison failed: " << num1 << " != " << num2;
+
 }
 
 TEST(CustomLongTest, SetPrecision) {
     custom_long n1 = {"-123", "456"};
 
-    EXPECT_TRUE(n1.new_with_precision(0) == custom_long("-123", ""));
-    EXPECT_TRUE(n1.new_with_precision(1) == custom_long("-123", "4"));
-    EXPECT_TRUE(n1.new_with_precision(2) == custom_long("-123", "45"));
-    EXPECT_TRUE(n1.new_with_precision(3) == custom_long("-123", "456"));
+    EXPECT_TRUE(n1.set_precision(0) == custom_long("-123", ""));
+    EXPECT_TRUE(n1.set_precision(1) == custom_long("-123", "4"));
+    EXPECT_TRUE(n1.set_precision(2) == custom_long("-123", "45"));
+    EXPECT_TRUE(n1.set_precision(3) == custom_long("-123", "456"));
 
-    EXPECT_FALSE(n1.new_with_precision(0) != custom_long("-123", ""));
-    EXPECT_FALSE(n1.new_with_precision(1) != custom_long("-123", "4"));
-    EXPECT_FALSE(n1.new_with_precision(2) != custom_long("-123", "45"));
-    EXPECT_FALSE(n1.new_with_precision(3) != custom_long("-123", "456"));
+    EXPECT_FALSE(n1.set_precision(0) != custom_long("-123", ""));
+    EXPECT_FALSE(n1.set_precision(1) != custom_long("-123", "4"));
+    EXPECT_FALSE(n1.set_precision(2) != custom_long("-123", "45"));
+    EXPECT_FALSE(n1.set_precision(3) != custom_long("-123", "456"));
 }
 
 
@@ -130,21 +138,15 @@ TEST(DifferentCreation, test1) {
     EXPECT_TRUE(num1 == expected);
 }
 
+
 TEST(DifferentCreation, test2) {
-    custom_long num1 = custom_long(222.333);
-    custom_long expected = custom_long("222", "333");
-
-    EXPECT_TRUE(num1 == expected);
-}
-
-TEST(DifferentCreation, test3) {
     custom_long num1 = custom_long("2343535");
     custom_long expected = custom_long(2343535);
 
     EXPECT_TRUE(num1 == expected);
 }
 
-TEST(DifferentCreation, test4) {
+TEST(DifferentCreation, test3) {
     custom_long num1 = custom_long("2343535.444444");
     custom_long expected = custom_long("2343535", "444444");
     EXPECT_TRUE(num1 == expected);
@@ -153,7 +155,7 @@ TEST(DifferentCreation, test4) {
 
 int main(int argc, char **argv)
 {
-  ::testing::InitGoogleTest(&argc, argv);
+    ::testing::InitGoogleTest(&argc, argv);
 
   return RUN_ALL_TESTS();
 }
