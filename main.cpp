@@ -14,7 +14,6 @@ int main()
     custom_long num7{"9", "12"};
     custom_long num8{"9", "13"};
 
-
     custom_long res = num1 + num2;
     res.set_precision(1234);
 
@@ -47,8 +46,8 @@ int main()
     std::cout << num5-num6 << std::endl; // 7,09109
     std::cout << num7-num8 << std::endl; //-3,01
 
-    //std::cout << custom_long("123", "0") * custom_long("123", "0") << std::endl;
-
+    std::cout << num3 / num4 << std::endl;
+    std::cout << "-123.456"_cl / "789.012"_cl << std::endl;
 
     auto tessst = "1243825821852186578216578126785682176528.124215215215"_cl;
     std::cout << tessst << std::endl;

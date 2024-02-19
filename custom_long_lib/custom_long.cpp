@@ -383,13 +383,55 @@ custom_long custom_long::multiply(const custom_long& num1, const custom_long& nu
 
 custom_long custom_long::operator*(const custom_long& other)
 {   
-    
     return multiply(*this, other);
+}
+
+custom_long custom_long::div(custom_long num1, custom_long num2)
+{
+    bool sgn = num1.sign ^ num2.sign;
+    custom_long int_part = "0"_cl;
+    std::string dividend = num1.integer + num1.fraction;
+    std::string divisor = num2.integer + num2.fraction;
+
+    int max_precision = std::max(num1.precision, num2.precision);
+    int prec1 = num1.precision;
+    int prec2 = num2.precision;
+
+    dividend += std::string(max_precision - num1.precision, '0');
+    divisor += std::string(max_precision - num2.precision, '0');
+
+    custom_long temp_div = {dividend, "0"};
+    custom_long temp_sor = {divisor, "0"};
+
+    while ((temp_div > temp_sor) || (temp_div == temp_sor)) {
+        temp_div = subtract(temp_div, temp_sor, false, false);
+        int_part = add(int_part, "1"_cl, false, false);
+    };
+
+    std::string frac_part = "0";
+    int precision_count = 0;
+    while (precision_count <= max_precision * 2 + 1) {
+        temp_div.integer += "0";
+        custom_long temp = "0"_cl;
+
+        while ((temp_div > temp_sor) || (temp_div == temp_sor)) {
+            temp_div = subtract(temp_div, temp_sor, false, false);
+            temp = add(temp, "1"_cl, false, false);
+        }
+
+        frac_part += temp.integer;
+        precision_count++;
+    }
+    frac_part.erase(0, 1);
+    custom_long res = {int_part.integer, frac_part};
+    res.sign = sgn;
+    return res;
 }
 
 custom_long custom_long::operator/(const custom_long& other)
 {
-    return custom_long("0", "0");
+    *this = div(*this, other);
+    return *this;
 }
 
 custom_long operator ""_cl(const char *str, size_t size)
