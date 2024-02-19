@@ -292,7 +292,7 @@ custom_long custom_long::subtract(const custom_long& num1, const custom_long& nu
 
     std::string frac_res;
 
-    for (int i = max_frac_size; i >= 0; i--) {
+    for (int i = max_frac_size - 1; i >= 0; i--) {
         int digit1 = temp_frac_num1[i] - '0';
         int digit2 = temp_frac_num2[i] - '0';
         
@@ -336,12 +336,55 @@ custom_long custom_long::operator-(const custom_long& other)
     return subtract(*this, other, false, false);
 }
 
+custom_long custom_long::multiply(const custom_long& num1, const custom_long& num2)
+{   
+    if ((num1.integer == "0" && num1.fraction == "0") || (num2.integer == "0" && num2.fraction == "0")) {
+        return {"0", "0"};
+    }
+
+    bool sgn = num1.sign ^ num2.sign;
+
+    std::string temp1 = num1.integer + num1.fraction;
+    size_t dot_pos1 = num1.fraction.size();
+
+    std::string temp2 = num2.integer + num2.fraction;
+    size_t dot_pos2 = num2.fraction.size();
+
+    size_t res_dot_pos = dot_pos1 + dot_pos2;
+
+    auto [size1, size2] = get_sizes(temp1, temp2);
+
+    std::string result_string(size1 + size2, '0');
+    for (int i = size1 - 1; i >= 0; i--) {
+            int carry = 0;
+            for (int j = size2 - 1; j >= 0; j--) {
+                int product = (temp1[i] - '0') * (temp2[j] - '0') + (result_string[i + j + 1] - '0') + carry;
+                carry = product / 10;
+                result_string[i + j + 1] = (product % 10) + '0';
+            }
+            result_string[i] += carry;
+        }
+
+    if (num1.integer == "0" && num2.integer == "0") {
+        custom_long res = {"0", result_string.erase(0, 2)};
+        res.sign = sgn;
+        return res;
+    }
+
+    int idx = 0;
+    while (idx < res_dot_pos && result_string[idx] == '0') {
+        result_string.erase(idx, 1);
+    }
+    res_dot_pos = result_string.size() - res_dot_pos;
+    custom_long res = {result_string.substr(0, res_dot_pos), result_string.substr(res_dot_pos, result_string.size())};
+    res.sign = sgn;
+    return res;
+}
+
 custom_long custom_long::operator*(const custom_long& other)
 {   
-    custom_long res("0", "0");
     
-
-    return res;
+    return multiply(*this, other);
 }
 
 custom_long custom_long::operator/(const custom_long& other)

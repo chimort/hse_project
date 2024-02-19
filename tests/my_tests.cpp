@@ -291,6 +291,66 @@ TEST(Subtraction, DifferentSigns) {
     std::cout << "--------------------\n" << std::endl;
 }
 
+TEST(Multiplication, PositiveNumbers) {
+    std::cout << "--------------------\n" << "Multiplication, PositiveNumbers:" << std::endl;
+
+    custom_long num1 = {"123", "456"};
+    custom_long num2 = {"789", "012"};
+
+    std::cout << "Testing multiplication: " << num1 << " * " << num2 << " = " << num1 * num2 << std::endl;
+    EXPECT_TRUE(num1 * num2 == custom_long("97408", "265472"));
+
+    std::cout << "--------------------\n" << std::endl;
+}
+
+TEST(Multiplication, ZeroMultiplication) {
+    std::cout << "--------------------\n" << "Multiplication, ZeroMultiplication:" << std::endl;
+
+    custom_long num1 = {"123", "456"};
+    custom_long num2 = {"0", "789"};
+
+    std::cout << "Testing multiplication by zero: " << num1 << " * " << num2 << " = " << num1 * num2 << std::endl;
+    EXPECT_TRUE(num1 * num2 == custom_long("97", "406784"));
+
+    std::cout << "--------------------\n" << std::endl;
+}
+
+TEST(Multiplication, SingleDigitNumbers) {
+    std::cout << "--------------------\n" << "Multiplication, SingleDigitNumbers:" << std::endl;
+
+    custom_long num1 = {"247583476934", "43675674578345435"};
+    custom_long num2 = {"0", "0"};
+
+    std::cout << "Testing multiplication of single-digit numbers: " << num1 << " * " << num2 << " = " << num1 * num2 << std::endl;
+    EXPECT_TRUE(num1 * num2 == custom_long("0", "0"));
+
+    std::cout << "--------------------\n" << std::endl;
+}
+
+TEST(Multiplication, LargeNumbers) {
+    std::cout << "--------------------\n" << "Multiplication, LargeNumbers:" << std::endl;
+
+    custom_long num1 = {"9812421525", "9"};
+    custom_long num2 = {"12323536666", "12"};
+
+    std::cout << "Testing multiplication of large numbers: " << num1 << " * " << num2 << " = " << num1 * num2 << std::endl;
+    EXPECT_TRUE(num1 * num2 == custom_long("120923736457853809232", "508"));
+
+    std::cout << "--------------------\n" << std::endl;
+}
+
+TEST(Multiplication, SmallNumbers) {
+    std::cout << "--------------------\n" << "Multiplication, SmallNumbers:" << std::endl;
+
+    custom_long num1 = {"0", "1"};
+    custom_long num2 = {"0", "1"};
+
+    std::cout << "Testing multiplication of small numbers: " << num1 << " * " << num2 << " = " << num1 * num2 << std::endl;
+    EXPECT_TRUE(num1 * num2 == custom_long("0", "01"));
+
+    std::cout << "--------------------\n" << std::endl;
+}
+
 
 int main(int argc, char **argv)
 {
