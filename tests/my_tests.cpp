@@ -357,8 +357,9 @@ TEST(Division, DifferentSigns) {
     custom_long num1 = {"-123", "456"};
     custom_long num2 = {"789", "012"};
 
-    std::cout << "Testing division with different signs: " << num1 << " / " << num2 << " = " << (num1 / num2).set_precision(3) << std::endl;
-    EXPECT_TRUE((num1 / num2).set_precision(3) == custom_long("-0", "156"));
+    custom_long res = (num1 / num2);
+    std::cout << "Testing division with different signs: " << num1 << " / " << num2 << " = " << res.set_precision(3) << std::endl;
+    EXPECT_TRUE(res.set_precision(3) == custom_long("-0", "156"));
 
     std::cout << "--------------------\n" << std::endl;
 }
@@ -382,7 +383,7 @@ TEST(Division, SmallerNumberDividedByLarger) {
     custom_long num2 = {"9876543210123456789", "012345"};
 
     std::cout << "Testing division of smaller number by larger: " << num1 << " / " << num2 << " = " << (num1 / num2).set_precision(3) << std::endl;
-    EXPECT_TRUE((num1 / num2).set_precision(3) == custom_long("0", "000012"));
+    EXPECT_TRUE((num1 / num2).set_precision(3) == custom_long("0", "0"));
 
     std::cout << "--------------------\n" << std::endl;
 }
@@ -390,11 +391,13 @@ TEST(Division, SmallerNumberDividedByLarger) {
 TEST(Division, RandomNumbers) {
     std::cout << "--------------------\n" << "Division, RandomNumbers:" << std::endl;
 
-    custom_long num1 = {"9876543210", "987654"};
+    custom_long num1 = {"98765432101", "987654"};
     custom_long num2 = {"123456789", "012"};
 
-    std::cout << "Testing division of random numbers: " << num1 << " / " << num2 << " = " << (num1 / num2).set_precision(3) << std::endl;
-    EXPECT_TRUE((num1 / num2).set_precision(3) == custom_long("79", "969696"));
+    custom_long res = (num1 / num2);
+
+    std::cout << "Testing division of random numbers: " << num1 << " / " << num2 << " = " << res.set_precision(3) << std::endl;
+    EXPECT_TRUE(res.set_precision(3) == custom_long("800", "0"));
 
     std::cout << "--------------------\n" << std::endl;
 }

@@ -14,7 +14,7 @@ private:
     custom_long add(const custom_long& num1, const custom_long& num2, bool side, bool unexpected);
     custom_long subtract(const custom_long& num1, const custom_long& num2, bool side, bool unexpected);
     custom_long multiply(const custom_long& num1, const custom_long& num2);
-    custom_long div(custom_long num1, custom_long num2);
+    custom_long div(const custom_long& num1, const custom_long& num2);
 
     bool frac_compare(std::string num1, std::string num2);
     bool int_compare(std::string num1, std::string num2);

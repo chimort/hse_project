@@ -386,9 +386,18 @@ custom_long custom_long::operator*(const custom_long& other)
     return multiply(*this, other);
 }
 
-custom_long custom_long::div(custom_long num1, custom_long num2)
+custom_long custom_long::div(const custom_long& num1, const custom_long& num2)
 {
     bool sgn = num1.sign ^ num2.sign;
+
+    if (num1.integer == "0" && num2.fraction == "0") {
+        return {"0", "0"};
+    }
+    if (num1.integer  == num2.integer && num1.fraction == num2.fraction) {
+        custom_long same = "1"_cl;
+        same.sign = sgn;
+        return same;
+    }
     custom_long int_part = "0"_cl;
     std::string dividend = num1.integer + num1.fraction;
     std::string divisor = num2.integer + num2.fraction;
@@ -430,8 +439,7 @@ custom_long custom_long::div(custom_long num1, custom_long num2)
 
 custom_long custom_long::operator/(const custom_long& other)
 {
-    *this = div(*this, other);
-    return *this;
+    return div(*this, other);
 }
 
 custom_long operator ""_cl(const char *str, size_t size)
